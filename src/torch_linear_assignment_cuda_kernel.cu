@@ -93,7 +93,7 @@ uint32_t augmenting_path_cuda(uint32_t nr, uint32_t nc, uint32_t i,
 template <typename scalar_t, typename index_t>
 __device__ __forceinline__
 void solve_cuda_kernel(uint32_t nr, uint32_t nc,
-                       _t *cost, index_t *matching,
+                       scalar_t *cost, index_t *matching,
                        scalar_t *u, scalar_t *v,
                        scalar_t *shortestPathCosts,
                        uint32_t *path, uint32_t *col4row, uint32_t *row4col,
