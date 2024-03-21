@@ -186,10 +186,15 @@ void solve_cuda_batch(index_t bs, index_t nr, index_t nc,
 		      scalar_t *cost, index_t *matching) {
   TORCH_CHECK(std::numeric_limits<scalar_t>::has_infinity, "Data type doesn't have infinity.");
   auto infinity = std::numeric_limits<scalar_t>::infinity();
-  int nt = 256;
-  const dim3 block(nt);
-  const dim3 grid((bs + nt - 1) / nt);
-  solve_cuda_kernel_batch<<<grid, block>>>(
+
+  int blockSize;
+  int minGridSize;
+  cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize,
+				     (void *) solve_cuda_kernel_batch<scalar_t, index_t>,
+				     0, bs);
+
+  int gridSize = (bs + blockSize - 1) / blockSize;
+  solve_cuda_kernel_batch<<<gridSize, blockSize>>>(
     bs, nr, nc,
     cost, matching,
     infinity);
