@@ -18,6 +18,7 @@
 
 
 typedef unsigned int uint32_t;
+typedef unsigned char uint8_t;
 
 
 template <typename scalar_t>
@@ -35,7 +36,7 @@ uint32_t augmenting_path_cuda(uint32_t nr, uint32_t nc, uint32_t i,
                               scalar_t *cost, scalar_t *u, scalar_t *v,
                               uint32_t *path, uint32_t *row4col,
                               scalar_t *shortestPathCosts,
-                              bool *SR, bool *SC,
+                              uint8_t *SR, uint8_t *SC,
                               uint32_t *remaining,
                               scalar_t *p_minVal,
                               scalar_t infinity)
@@ -43,18 +44,18 @@ uint32_t augmenting_path_cuda(uint32_t nr, uint32_t nc, uint32_t i,
     scalar_t minVal = 0;
     uint32_t num_remaining = nc;
     for (uint32_t it = 0; it < nc; ++it) {
-        SC[it] = false;
+        SC[it] = 0;
         remaining[it] = nc - it - 1;
         shortestPathCosts[it] = infinity;
     }
 
-    array_fill(SR, SR + nr, false);
+    array_fill(SR, SR + nr, (uint8_t) 0);
 
     uint32_t sink = -1;
     while (sink == -1) {
         uint32_t index = -1;
         scalar_t lowest = infinity;
-        SR[i] = true;
+        SR[i] = 1;
 
         for (uint32_t it = 0; it < num_remaining; it++) {
             uint32_t j = remaining[it];
@@ -82,7 +83,7 @@ uint32_t augmenting_path_cuda(uint32_t nr, uint32_t nc, uint32_t i,
             i = row4col[j];
         }
 
-        SC[j] = true;
+        SC[j] = 1;
         remaining[index] = remaining[--num_remaining];
     }
     *p_minVal = minVal;
@@ -97,7 +98,7 @@ void solve_cuda_kernel(uint32_t nr, uint32_t nc,
                        scalar_t *u, scalar_t *v,
                        scalar_t *shortestPathCosts,
                        uint32_t *path, uint32_t *col4row, uint32_t *row4col,
-                       bool *SR, bool *SC,
+                       uint8_t *SR, uint8_t *SC,
                        uint32_t *remaining,
                        scalar_t infinity)
 {
@@ -154,7 +155,7 @@ void solve_cuda_kernel_batch(uint32_t bs, uint32_t nr, uint32_t nc,
                              scalar_t *u, scalar_t *v,
                              scalar_t *shortestPathCosts,
                              uint32_t *path, uint32_t *col4row, uint32_t *row4col,
-                             bool *SR, bool *SC,
+                             uint8_t *SR, uint8_t *SC,
                              uint32_t *remaining,
                              scalar_t infinity) {
   int i = blockDim.x * blockIdx.x + threadIdx.x;
@@ -190,8 +191,8 @@ void solve_cuda_batch(uint32_t bs, uint32_t nr, uint32_t nc,
   thrust::device_vector<uint32_t> path(bs * nc);
   thrust::device_vector<uint32_t> col4row(bs * nr);
   thrust::device_vector<uint32_t> row4col(bs * nc);
-  thrust::device_vector<bool> SR(bs * nr);
-  thrust::device_vector<bool> SC(bs * nc);
+  thrust::device_vector<uint8_t> SR(bs * nr);
+  thrust::device_vector<uint8_t> SC(bs * nc);
   thrust::device_vector<uint32_t> remaining(bs * nc);
 
   thrust::fill(u.begin(), u.end(), (scalar_t) 0);
