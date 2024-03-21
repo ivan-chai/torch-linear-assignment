@@ -1,4 +1,4 @@
-# Batch linear assignment solver for PyTorch
+# Batch linear assignment for PyTorch
 Batch computation of the linear assignment problem on GPU.
 
 ## Install
