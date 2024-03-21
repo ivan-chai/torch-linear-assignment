@@ -17,7 +17,6 @@
 #include <limits>
 
 
-typedef int int32_t;
 typedef unsigned char uint8_t;
 
 
@@ -32,18 +31,18 @@ void array_fill(scalar_t *start, scalar_t *stop, scalar_t value) {
 
 template <typename scalar_t>
 __device__ __forceinline__
-int32_t augmenting_path_cuda(int32_t nr, int32_t nc, int32_t i,
-                             scalar_t *cost, scalar_t *u, scalar_t *v,
-                             int32_t *path, int32_t *row4col,
-                             scalar_t *shortestPathCosts,
-                             uint8_t *SR, uint8_t *SC,
-                             int32_t *remaining,
-                             scalar_t *p_minVal,
-                             scalar_t infinity)
+int augmenting_path_cuda(int nr, int nc, int i,
+                         scalar_t *cost, scalar_t *u, scalar_t *v,
+                         int *path, int *row4col,
+                         scalar_t *shortestPathCosts,
+                         uint8_t *SR, uint8_t *SC,
+                         int *remaining,
+                         scalar_t *p_minVal,
+                         scalar_t infinity)
 {
     scalar_t minVal = 0;
-    int32_t num_remaining = nc;
-    for (int32_t it = 0; it < nc; ++it) {
+    int num_remaining = nc;
+    for (int it = 0; it < nc; ++it) {
         SC[it] = 0;
         remaining[it] = nc - it - 1;
         shortestPathCosts[it] = infinity;
@@ -51,14 +50,14 @@ int32_t augmenting_path_cuda(int32_t nr, int32_t nc, int32_t i,
 
     array_fill(SR, SR + nr, (uint8_t) 0);
 
-    int32_t sink = -1;
+    int sink = -1;
     while (sink == -1) {
-        int32_t index = -1;
+        int index = -1;
         scalar_t lowest = infinity;
         SR[i] = 1;
 
-        for (int32_t it = 0; it < num_remaining; it++) {
-            int32_t j = remaining[it];
+        for (int it = 0; it < num_remaining; it++) {
+            int j = remaining[it];
             scalar_t r = minVal + cost[i * nc + j] - u[i] - v[j];
             if (r < shortestPathCosts[j]) {
               path[j] = i;
@@ -76,7 +75,7 @@ int32_t augmenting_path_cuda(int32_t nr, int32_t nc, int32_t i,
             return -1;
         }
 
-        int32_t j = remaining[index];
+        int j = remaining[index];
         if (row4col[j] == -1) {
             sink = j;
         } else {
@@ -91,19 +90,19 @@ int32_t augmenting_path_cuda(int32_t nr, int32_t nc, int32_t i,
 }
 
 
-template <typename scalar_t, typename index_t>
+template <typename scalar_t>
 __device__ __forceinline__
-void solve_cuda_kernel(int32_t nr, int32_t nc,
-                       scalar_t *cost, index_t *matching,
+void solve_cuda_kernel(int nr, int nc,
+                       scalar_t *cost,
                        scalar_t *u, scalar_t *v,
                        scalar_t *shortestPathCosts,
-                       int32_t *path, int32_t *col4row, int32_t *row4col,
+                       int *path, int *col4row, int *row4col,
                        uint8_t *SR, uint8_t *SC,
-                       int32_t *remaining,
+                       int *remaining,
                        scalar_t infinity)
 {
   scalar_t minVal;
-  for (int32_t curRow = 0; curRow < nr; ++curRow) {
+  for (int curRow = 0; curRow < nr; ++curRow) {
     auto sink = augmenting_path_cuda(nr, nc, curRow, cost,
                                      u, v,
                                      path, row4col,
@@ -115,21 +114,21 @@ void solve_cuda_kernel(int32_t nr, int32_t nc,
     CUDA_KERNEL_ASSERT(sink >= 0 && "Infeasible matrix");
 
     u[curRow] += minVal;
-    for (int32_t i = 0; i < nr; i++) {
+    for (int i = 0; i < nr; i++) {
       if (SR[i] && i != curRow) {
         u[i] += minVal - shortestPathCosts[col4row[i]];
       }
     }
 
-    for (int32_t j = 0; j < nc; j++) {
+    for (int j = 0; j < nc; j++) {
       if (SC[j]) {
         v[j] -= minVal - shortestPathCosts[j];
       }
     }
 
-    int32_t i = -1;
-    int32_t j = sink;
-    int32_t swap;
+    int i = -1;
+    int j = sink;
+    int swap;
     while (i != curRow) {
       i = path[j];
       row4col[j] = i;
@@ -138,22 +137,18 @@ void solve_cuda_kernel(int32_t nr, int32_t nc,
       col4row[i] = swap;
     }
   }
-
-  for (int32_t i = 0; i < nr; i++) {
-    matching[i] = col4row[i];
-  }
 }
 
 
-template <typename scalar_t, typename index_t>
+template <typename scalar_t>
 __global__
-void solve_cuda_kernel_batch(int32_t bs, int32_t nr, int32_t nc,
-                             scalar_t *cost, index_t *matching,
+void solve_cuda_kernel_batch(int bs, int nr, int nc,
+                             scalar_t *cost,
                              scalar_t *u, scalar_t *v,
                              scalar_t *shortestPathCosts,
-                             int32_t *path, int32_t *col4row, int32_t *row4col,
+                             int *path, int *col4row, int *row4col,
                              uint8_t *SR, uint8_t *SC,
-                             int32_t *remaining,
+                             int *remaining,
                              scalar_t infinity) {
   int i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i >= bs) {
@@ -162,7 +157,6 @@ void solve_cuda_kernel_batch(int32_t bs, int32_t nr, int32_t nc,
 
   solve_cuda_kernel(nr, nc,
                     cost + i * nr * nc,
-                    matching + i * nr,
                     u + i * nr,
                     v + i * nc,
                     shortestPathCosts + i * nc,
@@ -176,44 +170,39 @@ void solve_cuda_kernel_batch(int32_t bs, int32_t nr, int32_t nc,
 }
 
 
-template <typename scalar_t, typename index_t>
-void solve_cuda_batch(int32_t bs, int32_t nr, int32_t nc,
-                      scalar_t *cost, index_t *matching) {
+template <typename scalar_t>
+void solve_cuda_batch(int bs, int nr, int nc,
+                      scalar_t *cost, int *col4row, int *row4col) {
   TORCH_CHECK(std::numeric_limits<scalar_t>::has_infinity, "Data type doesn't have infinity.");
   auto infinity = std::numeric_limits<scalar_t>::infinity();
 
   thrust::device_vector<scalar_t> u(bs * nr);
   thrust::device_vector<scalar_t> v(bs * nc);
   thrust::device_vector<scalar_t> shortestPathCosts(bs * nc);
-  thrust::device_vector<int32_t> path(bs * nc);
-  thrust::device_vector<int32_t> col4row(bs * nr);
-  thrust::device_vector<int32_t> row4col(bs * nc);
+  thrust::device_vector<int> path(bs * nc);
   thrust::device_vector<uint8_t> SR(bs * nr);
   thrust::device_vector<uint8_t> SC(bs * nc);
-  thrust::device_vector<int32_t> remaining(bs * nc);
+  thrust::device_vector<int> remaining(bs * nc);
 
   thrust::fill(u.begin(), u.end(), (scalar_t) 0);
   thrust::fill(v.begin(), v.end(), (scalar_t) 0);
-  thrust::fill(path.begin(), path.end(), (int32_t) -1);
-  thrust::fill(row4col.begin(), row4col.end(), (int32_t) -1);
-  thrust::fill(col4row.begin(), col4row.end(), (int32_t) -1);
+  thrust::fill(path.begin(), path.end(), -1);
 
   int blockSize;
   int minGridSize;
   cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize,
-                                     (void *) solve_cuda_kernel_batch<scalar_t, index_t>,
+                                     (void *) solve_cuda_kernel_batch<scalar_t>,
                                      0, bs);
 
   int gridSize = (bs + blockSize - 1) / blockSize;
   solve_cuda_kernel_batch<<<gridSize, blockSize>>>(
     bs, nr, nc,
-    cost, matching,
+    cost,
     thrust::raw_pointer_cast(&u.front()),
     thrust::raw_pointer_cast(&v.front()),
     thrust::raw_pointer_cast(&shortestPathCosts.front()),
     thrust::raw_pointer_cast(&path.front()),
-    thrust::raw_pointer_cast(&col4row.front()),
-    thrust::raw_pointer_cast(&row4col.front()),
+    col4row, row4col,
     thrust::raw_pointer_cast(&SR.front()),
     thrust::raw_pointer_cast(&SC.front()),
     thrust::raw_pointer_cast(&remaining.front()),
@@ -225,27 +214,29 @@ void solve_cuda_batch(int32_t bs, int32_t nr, int32_t nc,
 }
 
 
-torch::Tensor batch_linear_assignment_cuda(torch::Tensor cost) {
+std::vector<torch::Tensor> batch_linear_assignment_cuda(torch::Tensor cost) {
   auto sizes = cost.sizes();
 
   TORCH_CHECK(sizes[2] >= sizes[1], "The number of tasks must be greater or equal to the number of workers.");
 
   auto device = cost.device();
-  auto matching_options = torch::TensorOptions()
-    .dtype(torch::kLong)
+  auto options = torch::TensorOptions()
+    .dtype(torch::kInt)
     .device(device.type(), device.index());
-  torch::Tensor matching = torch::empty({sizes[0], sizes[1]}, matching_options);
+  torch::Tensor col4row = torch::full({sizes[0], sizes[1]}, -1, options);
+  torch::Tensor row4col = torch::full({sizes[0], sizes[2]}, -1, options);
 
   // If sizes[2] is zero, then sizes[1] is also zero.
   if (sizes[0] * sizes[1] == 0) {
-    return matching;
+    return {col4row, row4col};
   }
 
   AT_DISPATCH_FLOATING_TYPES(cost.type(), "solve_cuda_batch", ([&] {
-    solve_cuda_batch<scalar_t, long>(
+    solve_cuda_batch<scalar_t>(
         sizes[0], sizes[1], sizes[2],
         cost.data<scalar_t>(),
-        matching.data<long>());
+        col4row.data<int>(),
+        row4col.data<int>());
   }));
-  return matching;
+  return {col4row, row4col};
 }

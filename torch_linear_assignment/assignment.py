@@ -17,18 +17,17 @@ def batch_linear_assignment_cpu(cost):
 
 def batch_linear_assignment_cuda(cost):
     b, w, t = cost.shape
-    if t < w:
-        cost = cost.transpose(1, 2)  # (B, T, W).
-        assignment = batch_linear_assignment_cuda(cost)  # (B, T).
-        matching = torch.full([b, w], -1, dtype=torch.long, device=cost.device)  # (B, W).
-        indices = torch.arange(t, dtype=torch.long, device=cost.device)[None].repeat(b, 1)  # (B, T).
-        matching.scatter_(1, assignment, indices)
-        return matching
 
     if not isinstance(cost, (torch.FloatTensor, torch.DoubleTensor)):
         cost = cost.to(torch.float)
 
-    return backend.batch_linear_assignment(cost.contiguous())
+    if t < w:
+        cost = cost.transpose(1, 2).contiguous()  # (B, T, W).
+        col4row, row4col = backend.batch_linear_assignment(cost)  # (B, T), (B, W).
+        return row4col.long()
+    else:
+        col4row, row4col = backend.batch_linear_assignment(cost)  # (B, W), (B, T).
+        return col4row.long()
 
 
 def batch_linear_assignment(cost):
