@@ -17,7 +17,7 @@
 #include <limits>
 
 
-typedef unsigned int uint32_t;
+typedef int int32_t;
 typedef unsigned char uint8_t;
 
 
@@ -32,18 +32,18 @@ void array_fill(scalar_t *start, scalar_t *stop, scalar_t value) {
 
 template <typename scalar_t>
 __device__ __forceinline__
-uint32_t augmenting_path_cuda(uint32_t nr, uint32_t nc, uint32_t i,
-                              scalar_t *cost, scalar_t *u, scalar_t *v,
-                              uint32_t *path, uint32_t *row4col,
-                              scalar_t *shortestPathCosts,
-                              uint8_t *SR, uint8_t *SC,
-                              uint32_t *remaining,
-                              scalar_t *p_minVal,
-                              scalar_t infinity)
+int32_t augmenting_path_cuda(int32_t nr, int32_t nc, int32_t i,
+                             scalar_t *cost, scalar_t *u, scalar_t *v,
+                             int32_t *path, int32_t *row4col,
+                             scalar_t *shortestPathCosts,
+                             uint8_t *SR, uint8_t *SC,
+                             int32_t *remaining,
+                             scalar_t *p_minVal,
+                             scalar_t infinity)
 {
     scalar_t minVal = 0;
-    uint32_t num_remaining = nc;
-    for (uint32_t it = 0; it < nc; ++it) {
+    int32_t num_remaining = nc;
+    for (int32_t it = 0; it < nc; ++it) {
         SC[it] = 0;
         remaining[it] = nc - it - 1;
         shortestPathCosts[it] = infinity;
@@ -51,14 +51,14 @@ uint32_t augmenting_path_cuda(uint32_t nr, uint32_t nc, uint32_t i,
 
     array_fill(SR, SR + nr, (uint8_t) 0);
 
-    uint32_t sink = -1;
+    int32_t sink = -1;
     while (sink == -1) {
-        uint32_t index = -1;
+        int32_t index = -1;
         scalar_t lowest = infinity;
         SR[i] = 1;
 
-        for (uint32_t it = 0; it < num_remaining; it++) {
-            uint32_t j = remaining[it];
+        for (int32_t it = 0; it < num_remaining; it++) {
+            int32_t j = remaining[it];
             scalar_t r = minVal + cost[i * nc + j] - u[i] - v[j];
             if (r < shortestPathCosts[j]) {
               path[j] = i;
@@ -76,7 +76,7 @@ uint32_t augmenting_path_cuda(uint32_t nr, uint32_t nc, uint32_t i,
             return -1;
         }
 
-        uint32_t j = remaining[index];
+        int32_t j = remaining[index];
         if (row4col[j] == -1) {
             sink = j;
         } else {
@@ -93,17 +93,17 @@ uint32_t augmenting_path_cuda(uint32_t nr, uint32_t nc, uint32_t i,
 
 template <typename scalar_t, typename index_t>
 __device__ __forceinline__
-void solve_cuda_kernel(uint32_t nr, uint32_t nc,
+void solve_cuda_kernel(int32_t nr, int32_t nc,
                        scalar_t *cost, index_t *matching,
                        scalar_t *u, scalar_t *v,
                        scalar_t *shortestPathCosts,
-                       uint32_t *path, uint32_t *col4row, uint32_t *row4col,
+                       int32_t *path, int32_t *col4row, int32_t *row4col,
                        uint8_t *SR, uint8_t *SC,
-                       uint32_t *remaining,
+                       int32_t *remaining,
                        scalar_t infinity)
 {
   scalar_t minVal;
-  for (uint32_t curRow = 0; curRow < nr; ++curRow) {
+  for (int32_t curRow = 0; curRow < nr; ++curRow) {
     auto sink = augmenting_path_cuda(nr, nc, curRow, cost,
                                      u, v,
                                      path, row4col,
@@ -115,34 +115,31 @@ void solve_cuda_kernel(uint32_t nr, uint32_t nc,
     CUDA_KERNEL_ASSERT(sink >= 0 && "Infeasible matrix");
 
     u[curRow] += minVal;
-    for (uint32_t i = 0; i < nr; i++) {
+    for (int32_t i = 0; i < nr; i++) {
       if (SR[i] && i != curRow) {
         u[i] += minVal - shortestPathCosts[col4row[i]];
       }
     }
 
-    for (uint32_t j = 0; j < nc; j++) {
+    for (int32_t j = 0; j < nc; j++) {
       if (SC[j]) {
         v[j] -= minVal - shortestPathCosts[j];
       }
     }
 
-    uint32_t i;
-    uint32_t j = sink;
-    uint32_t swap;
-    while (1) {
+    int32_t i = -1;
+    int32_t j = sink;
+    int32_t swap;
+    while (i != curRow) {
       i = path[j];
       row4col[j] = i;
       swap = j;
       j = col4row[i];
       col4row[i] = swap;
-      if (i == curRow) {
-        break;
-      }
     }
   }
 
-  for (uint32_t i = 0; i < nr; i++) {
+  for (int32_t i = 0; i < nr; i++) {
     matching[i] = col4row[i];
   }
 }
@@ -150,13 +147,13 @@ void solve_cuda_kernel(uint32_t nr, uint32_t nc,
 
 template <typename scalar_t, typename index_t>
 __global__
-void solve_cuda_kernel_batch(uint32_t bs, uint32_t nr, uint32_t nc,
+void solve_cuda_kernel_batch(int32_t bs, int32_t nr, int32_t nc,
                              scalar_t *cost, index_t *matching,
                              scalar_t *u, scalar_t *v,
                              scalar_t *shortestPathCosts,
-                             uint32_t *path, uint32_t *col4row, uint32_t *row4col,
+                             int32_t *path, int32_t *col4row, int32_t *row4col,
                              uint8_t *SR, uint8_t *SC,
-                             uint32_t *remaining,
+                             int32_t *remaining,
                              scalar_t infinity) {
   int i = blockDim.x * blockIdx.x + threadIdx.x;
   if (i >= bs) {
@@ -180,7 +177,7 @@ void solve_cuda_kernel_batch(uint32_t bs, uint32_t nr, uint32_t nc,
 
 
 template <typename scalar_t, typename index_t>
-void solve_cuda_batch(uint32_t bs, uint32_t nr, uint32_t nc,
+void solve_cuda_batch(int32_t bs, int32_t nr, int32_t nc,
                       scalar_t *cost, index_t *matching) {
   TORCH_CHECK(std::numeric_limits<scalar_t>::has_infinity, "Data type doesn't have infinity.");
   auto infinity = std::numeric_limits<scalar_t>::infinity();
@@ -188,18 +185,18 @@ void solve_cuda_batch(uint32_t bs, uint32_t nr, uint32_t nc,
   thrust::device_vector<scalar_t> u(bs * nr);
   thrust::device_vector<scalar_t> v(bs * nc);
   thrust::device_vector<scalar_t> shortestPathCosts(bs * nc);
-  thrust::device_vector<uint32_t> path(bs * nc);
-  thrust::device_vector<uint32_t> col4row(bs * nr);
-  thrust::device_vector<uint32_t> row4col(bs * nc);
+  thrust::device_vector<int32_t> path(bs * nc);
+  thrust::device_vector<int32_t> col4row(bs * nr);
+  thrust::device_vector<int32_t> row4col(bs * nc);
   thrust::device_vector<uint8_t> SR(bs * nr);
   thrust::device_vector<uint8_t> SC(bs * nc);
-  thrust::device_vector<uint32_t> remaining(bs * nc);
+  thrust::device_vector<int32_t> remaining(bs * nc);
 
   thrust::fill(u.begin(), u.end(), (scalar_t) 0);
   thrust::fill(v.begin(), v.end(), (scalar_t) 0);
-  thrust::fill(path.begin(), path.end(), (uint32_t) -1);
-  thrust::fill(row4col.begin(), row4col.end(), (uint32_t) -1);
-  thrust::fill(col4row.begin(), col4row.end(), (uint32_t) -1);
+  thrust::fill(path.begin(), path.end(), (int32_t) -1);
+  thrust::fill(row4col.begin(), row4col.end(), (int32_t) -1);
+  thrust::fill(col4row.begin(), col4row.end(), (int32_t) -1);
 
   int blockSize;
   int minGridSize;

@@ -28,7 +28,7 @@ class TestAssignment(TestCase):
             return
 
         for bs, rows, cols in [(16, 20, 40), (1, 30, 10), (0, 5, 5)]:
-            cost = torch.randn(bs, rows, cols)
+            cost = torch.randint(-10, 10, (bs, rows, cols))
             matching_cpu = batch_linear_assignment(cost)
             matching_gpu = batch_linear_assignment(cost.to(self.device)).cpu()
             self.assertEqual(matching_cpu.shape, matching_gpu.shape)
