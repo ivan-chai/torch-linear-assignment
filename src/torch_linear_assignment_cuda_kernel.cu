@@ -86,9 +86,11 @@ int augmenting_path_cuda(int nr, int nc, int i,
         scalar_t lowest = infinity;
         SR[i] = 1;
 
+        scalar_t *cost_row = cost + i * nc;
+        scalar_t base_r = minVal - u[i];
         for (int it = 0; it < num_remaining; it++) {
             int j = remaining[it];
-            scalar_t r = minVal + cost[i * nc + j] - u[i] - v[j];
+            scalar_t r = base_r + cost_row[j] - v[j];
             if (r < shortestPathCosts[j]) {
               path[j] = i;
               shortestPathCosts[j] = r;
