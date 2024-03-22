@@ -33,6 +33,7 @@ else:
 
 setup(
     name="torch-linear-assignment",
+    version="0.0.1",
     author="Ivan Karpukhin",
     author_email="karpuhini@yandex.ru",
     description="Batched linear assignment with PyTorch and CUDA.",
