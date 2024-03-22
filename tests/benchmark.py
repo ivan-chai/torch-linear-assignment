@@ -12,7 +12,7 @@ logger = logging.getLogger()
 
 def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    cost = torch.randn(1024, 20, 40)
+    cost = torch.randn(5000, 20, 40)
     start = time.time()
     for _ in range(10):
         batch_linear_assignment(cost)
