@@ -9,6 +9,11 @@ BUILD_CUDA = torch.backends.cuda.is_built() and int(os.environ.get("TLA_BUILD_CU
 
 
 if BUILD_CUDA:
+    compile_args = {
+        "cxx": ["-O3"]
+    }
+    if os.environ.get("CC", None) is not None:
+        compile_args["nvcc"] = ["-ccbin", os.environ["CC"]]
     ext_modules = [
         CUDAExtension(
             "torch_linear_assignment._backend",
@@ -16,7 +21,7 @@ if BUILD_CUDA:
                 "src/torch_linear_assignment_cuda.cpp",
                 "src/torch_linear_assignment_cuda_kernel.cu"
             ],
-            extra_compile_args={"cxx": ["-O3"], "nvcc": ["-ccbin", "gcc-11"]}
+            extra_compile_args=compile_args
         )
     ]
 else:

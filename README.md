@@ -15,5 +15,5 @@ export PATH=/usr/local/cuda-<version>/bin:"$PATH"
 
 If you need custom C++ compiler, use the following command:
 ```
-CXX=<compiler> pip install .
+CXX=<c++-compiler> CC=<gcc-compiler> pip install .
 ```
