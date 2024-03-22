@@ -22,11 +22,11 @@ def batch_linear_assignment_cuda(cost):
         cost = cost.to(torch.float)
 
     if t < w:
-        cost = cost.transpose(1, 2).contiguous()  # (B, T, W).
-        col4row, row4col = backend.batch_linear_assignment(cost)  # (B, T), (B, W).
+        cost = cost.transpose(1, 2)  # (B, T, W).
+        col4row, row4col = backend.batch_linear_assignment(cost.contiguous())  # (B, T), (B, W).
         return row4col.long()
     else:
-        col4row, row4col = backend.batch_linear_assignment(cost)  # (B, W), (B, T).
+        col4row, row4col = backend.batch_linear_assignment(cost.contiguous())  # (B, W), (B, T).
         return col4row.long()
 
 
