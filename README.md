@@ -38,3 +38,15 @@ The output is:
 ```
 tensor([[ 0,  2, -1,  1]], device='cuda:0')
 ```
+
+# Citation
+If you use this code in your research project, please cite the following paper:
+```
+@article{karpukhin2024hotppbenchmark,
+  title={HoTPP Benchmark: Are We Good at the Long Horizon Events Forecasting?},
+  author={Karpukhin, Ivan and Shipilov, Foma and Savchenko, Andrey},
+  journal={arXiv preprint arXiv:2406.14341},
+  year={2024},
+  url ={https://arxiv.org/abs/2406.14341}
+}
+```
