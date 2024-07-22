@@ -18,6 +18,12 @@ If you need custom C++ compiler, use the following command:
 CXX=<c++-compiler> CC=<gcc-compiler> pip install .
 ```
 
+If you get a torch-not-found error, try the following command:
+```
+pip install --upgrade pip wheel setuptools
+python -m pip install .
+```
+
 ## Example
 ```python
 import torch
