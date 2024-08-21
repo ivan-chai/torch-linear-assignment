@@ -13,6 +13,7 @@
 #include <thrust/fill.h>
 
 #include <torch/extension.h>
+#include <ATen/cuda/CUDAContext.h>
 
 #include <limits>
 
@@ -222,7 +223,8 @@ void solve_cuda_batch(int bs, int nr, int nc,
 
   int blockSize = SMPCores();
   int gridSize = (bs + blockSize - 1) / blockSize;
-  solve_cuda_kernel_batch<<<gridSize, blockSize>>>(
+  at::cuda::CUDAStream stream = at::cuda::getCurrentCUDAStream();
+  solve_cuda_kernel_batch<<<gridSize, blockSize, 0, stream.stream()>>>(
     bs, nr, nc,
     cost,
     thrust::raw_pointer_cast(&u.front()),
