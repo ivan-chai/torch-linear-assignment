@@ -1,1 +1,1 @@
-from .assignment import batch_linear_assignment
+from .assignment import batch_linear_assignment, assignment_to_indices

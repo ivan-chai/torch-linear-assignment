@@ -49,3 +49,30 @@ def batch_linear_assignment(cost):
         return batch_linear_assignment_cuda(cost)
     else:
         return batch_linear_assignment_cpu(cost)
+
+
+def assignment_to_indices(assignment):
+    """Convert assignment to the SciPy format.
+
+    Args:
+        assignment: The assignment with shape (B, W).
+
+    Returns:
+        row_ind, col_ind: An array of row indices and one of corresponding column indices
+            giving the optimal assignment, each with shape (B, K).
+
+    Raises:
+        ValueError if batch assignments have different sizes.
+    """
+    batch_size = assignment.shape[0]
+    if batch_size == 0:
+        indices = torch.zeros(0, 0, dtype=torch.long, device=assignment.device)
+        return indices, indices
+    mask = assignment >= 0
+    n_matches = mask.sum(1)
+    if (n_matches[1:] != n_matches[0]).any():
+        raise ValueError("Inconsistent matching sizes.")
+    n_matches = n_matches[0].item()
+    row_ind = mask.nonzero()[:, 1].reshape(batch_size, n_matches)
+    col_ind = assignment.masked_select(mask).reshape(batch_size, n_matches)
+    return row_ind, col_ind
