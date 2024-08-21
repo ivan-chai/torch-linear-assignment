@@ -5,7 +5,7 @@ from scipy.optimize import linear_sum_assignment
 from torch_linear_assignment import batch_linear_assignment, assignment_to_indices
 
 
-class TestAssignment(TestCase):
+class TestAssignmentToIndices(TestCase):
     def test_compare_to_scipy(self):
         for shape in [(0, 10, 10), (1, 20, 100), (1, 100, 20), (5, 20, 100), (5, 100, 20)]:
             cost = torch.randn(*shape)
