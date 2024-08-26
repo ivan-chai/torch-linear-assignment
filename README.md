@@ -46,7 +46,7 @@ tensor([[ 0,  2, -1,  1]], device='cuda:0')
 ```
 
 # Citation
-If you use this code in your research project, please cite the following paper:
+If you use this code in your research project, please cite one of the following papers:
 ```
 @article{karpukhin2024hotppbenchmark,
   title={HoTPP Benchmark: Are We Good at the Long Horizon Events Forecasting?},
@@ -54,5 +54,13 @@ If you use this code in your research project, please cite the following paper:
   journal={arXiv preprint arXiv:2406.14341},
   year={2024},
   url ={https://arxiv.org/abs/2406.14341}
+}
+
+@article{karpukhin2024detpp,
+  title={DeTPP: Leveraging Object Detection for Robust Long-Horizon Event Prediction},
+  author={Karpukhin, Ivan and Savchenko, Andrey},
+  journal={arXiv preprint arXiv:2408.13131},
+  year={2024},
+  url ={https://arxiv.org/abs/2408.13131}
 }
 ```
