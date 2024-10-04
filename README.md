@@ -1,4 +1,11 @@
 # Batch linear assignment for PyTorch
+<h4 align="left">
+    <p>
+        <a href="#Install">Installation</a> |
+        <a href="#Example">Usage</a> |
+        <a href="#Citation">Citation</a>
+    <p>
+</h4>
 Batch computation of the linear assignment problem on GPU.
 
 ## Install
@@ -46,7 +53,7 @@ tensor([[ 0,  2, -1,  1]], device='cuda:0')
 ```
 
 # Citation
-If you use this code in your research project, please cite one of the following papers:
+The code was originally developed for the [HoTPP Benchmark](https://github.com/ivan-chai/hotpp-benchmark). If you use this code in your research project, please cite one of the following papers:
 ```
 @article{karpukhin2024hotppbenchmark,
   title={HoTPP Benchmark: Are We Good at the Long Horizon Events Forecasting?},
