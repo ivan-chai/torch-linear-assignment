@@ -10,23 +10,23 @@ Batch computation of the linear assignment problem on GPU.
 
 ## Install
 Build and install package:
-```
+```bash
 pip install .
 ```
 
 When building with CUDA, make sure NVCC has the same CUDA version as PyTorch.
 You can choose CUDA version by
-```
+```bash
 export PATH=/usr/local/cuda-<version>/bin:"$PATH"
 ```
 
 If you need custom C++ compiler, use the following command:
-```
+```bash
 CXX=<c++-compiler> CC=<gcc-compiler> pip install .
 ```
 
 If you get a torch-not-found error, try the following command:
-```
+```bash
 pip install --upgrade pip wheel setuptools
 python -m pip install .
 ```
@@ -48,7 +48,7 @@ print(assignment)
 ```
 
 The output is:
-```
+```py
 tensor([[ 0,  2, -1,  1]], device='cuda:0')
 ```
 
