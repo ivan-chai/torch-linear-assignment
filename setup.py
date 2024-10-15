@@ -1,22 +1,26 @@
 import os
 from setuptools import setup
 
-import torch
-import torch.utils.cpp_extension as torch_cpp_ext
-
-
-BUILD_CUDA = torch.backends.cuda.is_built() and int(os.environ.get("TLA_BUILD_CUDA", "1"))
 
 with open("requirements.txt", "r") as fp:
     required_packages = [line.strip() for line in fp.readlines()]
 
-if BUILD_CUDA:
+
+def is_cuda() -> bool:
+    import torch
+
+    return torch.backends.cuda.is_built() and int(os.environ.get("TLA_BUILD_CUDA", "1"))
+
+
+def generate_cuda_ext_modules() -> list:
+    import torch.utils.cpp_extension as torch_cpp_ext
+
     compile_args = {
         "cxx": ["-O3"]
     }
     if os.environ.get("CC", None) is not None:
         compile_args["nvcc"] = ["-ccbin", os.environ["CC"]]
-    ext_modules = [
+    return [
         torch_cpp_ext.CUDAExtension(
             "torch_linear_assignment._backend",
             [
@@ -26,8 +30,12 @@ if BUILD_CUDA:
             extra_compile_args=compile_args
         )
     ]
-else:
-    ext_modules = [
+
+
+def generate_cpu_ext_modules() -> list:
+    import torch.utils.cpp_extension as torch_cpp_ext
+
+    return [
         torch_cpp_ext.CppExtension(
             "torch_linear_assignment._backend",
             [
@@ -36,6 +44,11 @@ else:
             extra_compile_args={"cxx": ["-O3"]}
         )
     ]
+
+def get_build_ext():
+    import torch.utils.cpp_extension as torch_cpp_ext
+
+    return torch_cpp_ext.BuildExtension
 
 
 if __name__ == '__main__':
@@ -46,9 +59,10 @@ if __name__ == '__main__':
         author_email="karpuhini@yandex.ru",
         description="Batched linear assignment with PyTorch and CUDA.",
         packages=["torch_linear_assignment"],
-        ext_modules=ext_modules,
+        ext_modules=generate_cuda_ext_modules() if is_cuda() else generate_cpu_ext_modules(),
+        setup_requires=required_packages,
         install_requires=required_packages,
         cmdclass={
-            "build_ext": torch_cpp_ext.BuildExtension
+            "build_ext": get_build_ext()
         }
     )
