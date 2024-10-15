@@ -9,7 +9,7 @@ with open("requirements.txt", "r") as fp:
 def is_cuda() -> bool:
     import torch
 
-    return torch.backends.cuda.is_built() and int(os.environ.get("TLA_BUILD_CUDA", "1"))
+    return torch.backends.cuda.is_built() and int(os.environ.get("TLA_BUILD_CUDA", "1")) and torch.cuda.is_available()
 
 
 def generate_cuda_ext_modules() -> list:
