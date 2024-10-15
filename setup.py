@@ -54,7 +54,7 @@ def get_build_ext():
 if __name__ == '__main__':
     setup(
         name="torch-linear-assignment",
-        version="0.0.1",
+        version="0.0.1.post1",
         author="Ivan Karpukhin",
         author_email="karpuhini@yandex.ru",
         description="Batched linear assignment with PyTorch and CUDA.",
