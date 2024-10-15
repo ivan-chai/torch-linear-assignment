@@ -33,4 +33,4 @@ jobs:
       run: pytest tests/
 
     - name: Benchmark package
-      run: python tests/benchmarks.py
+      run: python tests/benchmark.py
