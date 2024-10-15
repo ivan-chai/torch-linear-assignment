@@ -25,7 +25,7 @@ jobs:
       with:
         python-version: '3.x'
     - name: Install dependencies
-      run: pip install build
+      run: pip install -e .
     - name: Build package
       run: python setup.py sdist
     - name: Publish package
