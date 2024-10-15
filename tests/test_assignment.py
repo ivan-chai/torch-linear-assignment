@@ -34,6 +34,3 @@ class TestAssignment(TestCase):
             self.assertEqual(matching_cpu.dtype, matching_gpu.dtype)
             self.assertTrue((matching_cpu == matching_gpu).all())
 
-
-if __name__ == "__main__":
-    main()

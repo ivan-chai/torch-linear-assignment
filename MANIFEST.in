@@ -1,0 +1,32 @@
+# Manifest syntax https://packaging.python.org/en/latest/guides/using-manifest-in/
+#graft wheelhouse
+
+recursive-exclude __pycache__  *.py[cod] *.orig
+recursive-include torch_linear_assignment *.py
+recursive-include src *.cpp
+
+# Include the README and CHANGELOG
+include *.md
+
+# Include the license file
+include LICENSE
+
+
+# exclude tests from package
+recursive-exclude tests *
+recursive-exclude site *
+exclude tests
+
+# Include the Requirements
+include requirements.txt
+
+# Exclude build configs
+exclude *.sh
+exclude *.toml
+exclude *.yml
+exclude *.yaml
+exclude Makefile
+
+prune .devcontainer
+prune .git
+prune .github

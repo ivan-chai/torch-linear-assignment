@@ -27,6 +27,3 @@ class TestAssignmentToIndices(TestCase):
             self.assertTrue((row_ind == gt_row_ind).all())
             self.assertTrue((col_ind == gt_col_ind).all())
 
-
-if __name__ == "__main__":
-    main()
