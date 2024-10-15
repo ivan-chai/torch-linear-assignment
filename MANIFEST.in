@@ -20,9 +20,11 @@ exclude tests
 # Include the Requirements
 include requirements.txt
 
+# Include build dependencies
+include pyproject.toml
+
 # Exclude build configs
 exclude *.sh
-exclude *.toml
 exclude *.yml
 exclude *.yaml
 exclude Makefile
