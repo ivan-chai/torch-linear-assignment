@@ -3,3 +3,4 @@ requires = [
     "setuptools",
     "torch>=1.12.0",
 ]
+build-backend = "setuptools.build_meta"

@@ -24,6 +24,8 @@ jobs:
       with:
         python-version: '3.x'
     - name: Install dependencies
-      run: pip install -e .
+      run: pip install -e . pytest
     - name: Test package
-      run: python setup.py sdist
+      run: pytest tests/
+    - name: Benchmark package
+      run: pytest tests/benchmarks.py

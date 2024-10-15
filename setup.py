@@ -1,9 +1,5 @@
 import os
-from setuptools import setup
-
-
-with open("requirements.txt", "r") as fp:
-    required_packages = [line.strip() for line in fp.readlines()]
+import setuptools
 
 
 def is_cuda() -> bool:
@@ -52,7 +48,7 @@ def get_build_ext():
 
 
 if __name__ == '__main__':
-    setup(
+    setuptools.setup(
         name="torch-linear-assignment",
         version="0.0.1.post1",
         author="Ivan Karpukhin",
@@ -60,8 +56,6 @@ if __name__ == '__main__':
         description="Batched linear assignment with PyTorch and CUDA.",
         packages=["torch_linear_assignment"],
         ext_modules=generate_cuda_ext_modules() if is_cuda() else generate_cpu_ext_modules(),
-        setup_requires=required_packages,
-        install_requires=required_packages,
         cmdclass={
             "build_ext": get_build_ext()
         }
