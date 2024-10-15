@@ -31,6 +31,10 @@ def get_build_ext_modules():
     ]
 
 
+with open("requirements.txt", "r") as fp:
+    required_packages = [line.strip() for line in fp.readlines()]
+
+
 def get_build_ext():
     import torch.utils.cpp_extension as torch_cpp_ext
 
@@ -46,6 +50,7 @@ if __name__ == '__main__':
         description="Batched linear assignment with PyTorch and CUDA.",
         packages=["torch_linear_assignment"],
         ext_modules=get_build_ext_modules(),
+        install_requires=required_packages,
         cmdclass={
             "build_ext": get_build_ext()
         }
