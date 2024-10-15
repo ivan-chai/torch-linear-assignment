@@ -24,8 +24,13 @@ jobs:
       with:
         python-version: '3.x'
     - name: Install dependencies
-      run: pip install -e . pytest
+      run: |
+        pip install -e . pytest \
+          --find-links "https://download.pytorch.org/whl/cpu/torch_stable.html"
+        pip list
+
     - name: Test package
       run: pytest tests/
+
     - name: Benchmark package
       run: pytest tests/benchmarks.py
