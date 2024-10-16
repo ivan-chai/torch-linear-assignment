@@ -63,6 +63,8 @@ tensor([[ 0,  2, -1,  1]], device='cuda:0')
 
 To get indices in the SciPy's format:
 ```py
+from torch_linear_assignment import assignment_to_indices
+
 row_ind, col_ind = assignment_to_indices(assignment)
 print(row_ind)
 print(col_ind)
