@@ -41,6 +41,10 @@ def get_build_ext():
     return torch_cpp_ext.BuildExtension
 
 
+with open("README.md") as fp:
+    long_description = fp.read()
+
+
 if __name__ == '__main__':
     setuptools.setup(
         name="torch-linear-assignment",
@@ -48,6 +52,8 @@ if __name__ == '__main__':
         author="Ivan Karpukhin",
         author_email="karpuhini@yandex.ru",
         description="Batched linear assignment with PyTorch and CUDA.",
+        long_description=long_description,
+        long_description_content_type="text/markdown",
         packages=["torch_linear_assignment"],
         ext_modules=get_build_ext_modules(),
         install_requires=required_packages,
