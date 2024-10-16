@@ -1,7 +1,7 @@
-from unittest import TestCase, main
-
+import pytest
 import torch
 from torch_linear_assignment import batch_linear_assignment
+from unittest import TestCase
 
 
 class TestAssignment(TestCase):
@@ -22,10 +22,8 @@ class TestAssignment(TestCase):
         print(result)
         self.assertTrue((result == gt_assignment).all())
 
+    @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA is not available")
     def test_cuda_equal_to_cpu(self):
-        if self.device == "cpu":
-            return
-
         for bs, rows, cols in [(16, 20, 40), (1, 30, 10), (0, 5, 5)]:
             cost = torch.randint(-10, 10, (bs, rows, cols))
             matching_cpu = batch_linear_assignment(cost)
