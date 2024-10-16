@@ -13,7 +13,7 @@
 Batch computation of the linear assignment problem on GPU.
 
 ## Install
-Build and install via PyPI:
+Build and install via PyPI (source distribution):
 ```bash
 pip install torch-linear-assignment
 ```
