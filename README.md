@@ -61,6 +61,19 @@ The output is:
 tensor([[ 0,  2, -1,  1]], device='cuda:0')
 ```
 
+To get indices in the SciPy's format:
+```py
+row_ind, col_ind = assignment_to_indices(assignment)
+print(row_ind)
+print(col_ind)
+```
+
+The output is:
+```py
+tensor([[0, 1, 3]], device='cuda:0')
+tensor([[0, 2, 1]], device='cuda:0')
+```
+
 # Citation
 The code was originally developed for the [HoTPP Benchmark](https://github.com/ivan-chai/hotpp-benchmark). If you use this code in your research project, please cite one of the following papers:
 ```
