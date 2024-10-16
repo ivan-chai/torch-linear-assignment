@@ -9,7 +9,11 @@
 Batch computation of the linear assignment problem on GPU.
 
 ## Install
-Build and install package:
+Build and install via PyPI:
+```bash
+```
+
+Build and install from Git repository:
 ```bash
 pip install .
 ```
