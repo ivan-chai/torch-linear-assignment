@@ -1,4 +1,8 @@
 # Batch linear assignment for PyTorch
+[![PyPI version](https://badge.fury.io/py/torch-linear-assignment.svg)](https://badge.fury.io/py/torch-linear-assignment)
+[![Build Status](https://github.com/ivan-chai/torch-linear-assignment/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/ivan-chai/torch-linear-assignment/actions)
+[![Downloads](https://static.pepy.tech/badge/torch-linear-assignment)](https://pepy.tech/project/torch-linear-assignment)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 <h4 align="left">
     <p>
         <a href="#Install">Installation</a> |
