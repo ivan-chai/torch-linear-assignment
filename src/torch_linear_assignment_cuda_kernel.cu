@@ -260,12 +260,12 @@ std::vector<torch::Tensor> batch_linear_assignment_cuda(torch::Tensor cost) {
     return {col4row, row4col};
   }
 
-  AT_DISPATCH_FLOATING_TYPES(cost.type(), "solve_cuda_batch", ([&] {
+  AT_DISPATCH_FLOATING_TYPES(cost.scalar_type(), "solve_cuda_batch", [&] {
     solve_cuda_batch<scalar_t>(
         sizes[0], sizes[1], sizes[2],
         cost.data<scalar_t>(),
         col4row.data<int>(),
         row4col.data<int>());
-  }));
+  });
   return {col4row, row4col};
 }
