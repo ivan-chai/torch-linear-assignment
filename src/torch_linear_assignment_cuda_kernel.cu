@@ -21,10 +21,10 @@
 typedef unsigned char uint8_t;
 
 
-int SMPCores()
+int SMPCores(int device_index)
 {
   cudaDeviceProp devProp;
-  cudaGetDeviceProperties(&devProp, 0);
+  cudaGetDeviceProperties(&devProp, device_index);
   switch (devProp.major){
   case 2: // Fermi
     if (devProp.minor == 1)
@@ -204,8 +204,11 @@ void solve_cuda_kernel_batch(int bs, int nr, int nc,
 
 
 template <typename scalar_t>
-void solve_cuda_batch(int bs, int nr, int nc,
+void solve_cuda_batch(int device_index,
+                      int bs, int nr, int nc,
                       scalar_t *cost, int *col4row, int *row4col) {
+  cudaSetDevice(device_index);
+
   TORCH_CHECK(std::numeric_limits<scalar_t>::has_infinity, "Data type doesn't have infinity.");
   auto infinity = std::numeric_limits<scalar_t>::infinity();
 
@@ -221,9 +224,9 @@ void solve_cuda_batch(int bs, int nr, int nc,
   thrust::fill(v.begin(), v.end(), (scalar_t) 0);
   thrust::fill(path.begin(), path.end(), -1);
 
-  int blockSize = SMPCores();
+  int blockSize = SMPCores(device_index);
   int gridSize = (bs + blockSize - 1) / blockSize;
-  at::cuda::CUDAStream stream = at::cuda::getCurrentCUDAStream();
+  at::cuda::CUDAStream stream = at::cuda::getCurrentCUDAStream(device_index);
   solve_cuda_kernel_batch<<<gridSize, blockSize, 0, stream.stream()>>>(
     bs, nr, nc,
     cost,
@@ -262,6 +265,7 @@ std::vector<torch::Tensor> batch_linear_assignment_cuda(torch::Tensor cost) {
 
   AT_DISPATCH_FLOATING_TYPES(cost.scalar_type(), "solve_cuda_batch", [&] {
     solve_cuda_batch<scalar_t>(
+        device.index(),
         sizes[0], sizes[1], sizes[2],
         cost.data<scalar_t>(),
         col4row.data<int>(),
