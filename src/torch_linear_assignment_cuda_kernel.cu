@@ -224,7 +224,7 @@ void solve_cuda_batch(int device_index,
   thrust::fill(v.begin(), v.end(), (scalar_t) 0);
   thrust::fill(path.begin(), path.end(), -1);
 
-  int blockSize = SMPCores(device_index);
+  static const int blockSize = SMPCores(device_index);
   int gridSize = (bs + blockSize - 1) / blockSize;
   at::cuda::CUDAStream stream = at::cuda::getCurrentCUDAStream(device_index);
   solve_cuda_kernel_batch<<<gridSize, blockSize, 0, stream.stream()>>>(
