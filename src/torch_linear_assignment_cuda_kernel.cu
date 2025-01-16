@@ -9,8 +9,6 @@
 
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <thrust/device_vector.h>
-#include <thrust/fill.h>
 
 #include <torch/extension.h>
 #include <ATen/cuda/CUDAContext.h>
@@ -203,8 +201,10 @@ void solve_cuda_kernel_batch(int bs, int nr, int nc,
 }
 
 
+
 template <typename scalar_t>
-void solve_cuda_batch(int device_index,
+void solve_cuda_batch(c10::ScalarType scalar_type,
+                      int device_index,
                       int bs, int nr, int nc,
                       scalar_t *cost, int *col4row, int *row4col) {
   cudaSetDevice(device_index);
@@ -212,17 +212,23 @@ void solve_cuda_batch(int device_index,
   TORCH_CHECK(std::numeric_limits<scalar_t>::has_infinity, "Data type doesn't have infinity.");
   auto infinity = std::numeric_limits<scalar_t>::infinity();
 
-  thrust::device_vector<scalar_t> u(bs * nr);
-  thrust::device_vector<scalar_t> v(bs * nc);
-  thrust::device_vector<scalar_t> shortestPathCosts(bs * nc);
-  thrust::device_vector<int> path(bs * nc);
-  thrust::device_vector<uint8_t> SR(bs * nr);
-  thrust::device_vector<uint8_t> SC(bs * nc);
-  thrust::device_vector<int> remaining(bs * nc);
+  auto int_opt = torch::TensorOptions()
+    .dtype(torch::kInt)
+    .device(torch::kCUDA, device_index);
+  auto scalar_t_opt = torch::TensorOptions()
+    .dtype(scalar_type)
+    .device(torch::kCUDA, device_index);
+  auto uint8_opt = torch::TensorOptions()
+    .dtype(torch::kUInt8)
+    .device(torch::kCUDA, device_index);
 
-  thrust::fill(u.begin(), u.end(), (scalar_t) 0);
-  thrust::fill(v.begin(), v.end(), (scalar_t) 0);
-  thrust::fill(path.begin(), path.end(), -1);
+  torch::Tensor u = torch::zeros({bs * nr}, scalar_t_opt);
+  torch::Tensor v = torch::zeros({bs * nc}, scalar_t_opt);
+  torch::Tensor shortestPathCosts = torch::empty({bs * nc}, scalar_t_opt);
+  torch::Tensor path = torch::full({bs * nc}, -1, int_opt);
+  torch::Tensor SR = torch::empty({bs * nr}, uint8_opt);
+  torch::Tensor SC = torch::empty({bs * nc}, uint8_opt);
+  torch::Tensor remaining = torch::empty({bs * nc}, int_opt);
 
   int blockSize = SMPCores(device_index);
   int gridSize = (bs + blockSize - 1) / blockSize;
@@ -230,14 +236,14 @@ void solve_cuda_batch(int device_index,
   solve_cuda_kernel_batch<<<gridSize, blockSize, 0, stream.stream()>>>(
     bs, nr, nc,
     cost,
-    thrust::raw_pointer_cast(&u.front()),
-    thrust::raw_pointer_cast(&v.front()),
-    thrust::raw_pointer_cast(&shortestPathCosts.front()),
-    thrust::raw_pointer_cast(&path.front()),
+    u.data<scalar_t>(),
+    v.data<scalar_t>(),
+    shortestPathCosts.data<scalar_t>(),
+    path.data<int>(),
     col4row, row4col,
-    thrust::raw_pointer_cast(&SR.front()),
-    thrust::raw_pointer_cast(&SC.front()),
-    thrust::raw_pointer_cast(&remaining.front()),
+    SR.data<uint8_t>(),
+    SC.data<uint8_t>(),
+    remaining.data<int>(),
     infinity);
   cudaError_t err = cudaGetLastError();
   if (err != cudaSuccess) {
@@ -265,6 +271,7 @@ std::vector<torch::Tensor> batch_linear_assignment_cuda(torch::Tensor cost) {
 
   AT_DISPATCH_FLOATING_TYPES(cost.scalar_type(), "solve_cuda_batch", [&] {
     solve_cuda_batch<scalar_t>(
+        cost.scalar_type(),
         device.index(),
         sizes[0], sizes[1], sizes[2],
         cost.data<scalar_t>(),
