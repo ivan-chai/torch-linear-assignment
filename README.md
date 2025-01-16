@@ -23,6 +23,11 @@ Build and install from Git repository:
 pip install .
 ```
 
+Building in an isolated environment may use a different PyTorch version. To match the current environment and reduce the disk usage, apply the following flag:
+```bash
+pip install --no-build-isolation torch-linear-assignment
+```
+
 When building with CUDA, make sure NVCC has the same CUDA version as PyTorch.
 You can choose CUDA version by
 ```bash
