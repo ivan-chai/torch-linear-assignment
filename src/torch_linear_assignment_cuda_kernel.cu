@@ -35,17 +35,20 @@ int SMPCores(int device_index)
   case 6: // Pascal
     if ((devProp.minor == 1) || (devProp.minor == 2)) return 128;
     else if (devProp.minor == 0) return 64;
+    break;
   case 7: // Volta and Turing
     if ((devProp.minor == 0) || (devProp.minor == 5)) return 64;
+    break;
   case 8: // Ampere
     if (devProp.minor == 0) return 64;
     else if (devProp.minor == 6) return 128;
     else if (devProp.minor == 9) return 128; // ada lovelace
+    break;
   case 9: // Hopper
     if (devProp.minor == 0) return 128;
-  // Unknown device;
+    break;
   }
-  return 128;
+  return 128; // Unknown device
 }
 
 
