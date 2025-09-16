@@ -1,3 +1,4 @@
+import warnings
 import torch
 
 import torch_linear_assignment._backend as backend
@@ -48,7 +49,11 @@ def batch_linear_assignment(cost):
     if backend.has_cuda() and cost.is_cuda:
         return batch_linear_assignment_cuda(cost)
     else:
-        return batch_linear_assignment_cpu(cost)
+        device = cost.device
+        if cost.is_cuda:
+            warnings.warn("No CUDA backend available for linear assignment. Using CPU.")
+            cost = cost.cpu()
+        return batch_linear_assignment_cpu(cost).to(device)
 
 
 def assignment_to_indices(assignment):

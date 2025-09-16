@@ -48,7 +48,7 @@ with open("README.md") as fp:
 if __name__ == '__main__':
     setuptools.setup(
         name="torch-linear-assignment",
-        version="0.0.4",
+        version="0.0.5",
         author="Ivan Karpukhin",
         author_email="karpuhini@yandex.ru",
         description="Batched linear assignment with PyTorch and CUDA.",
