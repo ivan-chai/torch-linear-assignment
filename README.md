@@ -34,6 +34,12 @@ You can choose CUDA version by
 export PATH=/usr/local/cuda-<version>/bin:"$PATH"
 ```
 
+The same source builds for AMD GPUs against a ROCm build of PyTorch: PyTorch's
+`CUDAExtension` runs hipify at build time to translate the CUDA sources, so the
+ordinary install commands above work unchanged on ROCm. To target a specific
+architecture, set `PYTORCH_ROCM_ARCH` (for example `export PYTORCH_ROCM_ARCH=gfx90a`)
+before installing.
+
 If you need custom C++ compiler, use the following command:
 ```bash
 CXX=<c++-compiler> CC=<gcc-compiler> pip install .
