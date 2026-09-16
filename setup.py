@@ -60,7 +60,7 @@ if __name__ == "__main__":
     extension_modules = get_build_ext_modules()
     setup_kwargs: dict[str, object] = {
         "name": "torch-linear-assignment",
-        "version": "0.1.0.rc0",
+        "version": "0.1.0",
         "author": "Ivan Karpukhin",
         "author_email": "karpuhini@yandex.ru",
         "description": "Batched linear assignment with PyTorch and CUDA.",
