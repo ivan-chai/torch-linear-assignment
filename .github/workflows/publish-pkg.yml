@@ -37,12 +37,12 @@ jobs:
       run: |
         python -m pip install dist/*.whl
         pushd /tmp
-        python -c "import importlib.metadata as m, os; from pathlib import Path; import torch_linear_assignment as p; assert m.version('torch-linear-assignment') == '0.1.0rc0'; assert not Path(p.__file__).resolve().is_relative_to(Path(os.environ['GITHUB_WORKSPACE']).resolve()); print(p.__file__)"
+        python -c "import importlib.metadata as m, os; from pathlib import Path; import torch_linear_assignment as p; assert m.version('torch-linear-assignment') == '0.1.0'; assert not Path(p.__file__).resolve().is_relative_to(Path(os.environ['GITHUB_WORKSPACE']).resolve()); print(p.__file__)"
         popd
         python -m pip uninstall -y torch-linear-assignment
         python -m pip install --no-deps dist/*.tar.gz
         pushd /tmp
-        python -c "import importlib.metadata as m, os; from pathlib import Path; import torch_linear_assignment as p; assert m.version('torch-linear-assignment') == '0.1.0rc0'; assert not Path(p.__file__).resolve().is_relative_to(Path(os.environ['GITHUB_WORKSPACE']).resolve()); print(p.__file__)"
+        python -c "import importlib.metadata as m, os; from pathlib import Path; import torch_linear_assignment as p; assert m.version('torch-linear-assignment') == '0.1.0'; assert not Path(p.__file__).resolve().is_relative_to(Path(os.environ['GITHUB_WORKSPACE']).resolve()); print(p.__file__)"
         popd
 
     - name: Publish package
